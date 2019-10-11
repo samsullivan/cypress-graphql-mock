@@ -145,6 +145,10 @@ Cypress.Commands.add("mockGraphql", (options?: MockGraphQLOptions) => {
         const { operationName, query, variables } = payload;
         const rootValue = getRootValue(currentOps, operationName, variables);
 
+        if (rootValue === undefined) {
+          return originalFetch(input, init);
+        }
+
         if (
           // Additional checks here because of transpilation.
           // We will loose instanceof if we are not using specific babel plugin, or using pure TS to compile front-end
@@ -217,8 +221,9 @@ function getRootValue(
   variables: any
 ) {
   if (!operationName || !operations[operationName]) {
-    return {};
+    return undefined;
   }
+
   const op = operations[operationName];
   if (typeof op === "function") {
     try {
